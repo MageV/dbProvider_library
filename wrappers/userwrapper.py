@@ -56,7 +56,7 @@ class UserWrapper(AbstractWrapper, ABC):
                     updatable.username = kwargs["username"]
                 await _session.commit()
 
-    async def insert(self, users: dict):
+    async def insert(self, users: list):
         async with self.session() as _session:
             async with _session.begin():
                 for item in users:

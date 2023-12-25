@@ -79,7 +79,7 @@ class DbProvider:
     async def get_role_detail(self, **kwargs):
         return await self._role_wrapper.select(**kwargs)
 
-    #roles for table tasks
+    # roles for table tasks
 
     async def get_tasks(self):
         return await self._apptask_wrapper.select()
@@ -87,21 +87,21 @@ class DbProvider:
     async def get_task_detail(self, **kwargs):
         return await self._apptask_wrapper.select(**kwargs)
 
-    async def get_tasks_of_user_id(self,teleg_id):
-        lresult=list()
-        results=None
+    async def get_tasks_of_user_id(self, teleg_id):
+        lresult = list()
+        results = None
         async with self._async_session() as session:
             async with session.begin():
-                stmt=self._user_task_view.select().filter(self._user_task_view.c.teleg_id==teleg_id)
-                results=await session.execute(stmt)
+                stmt = self._user_task_view.select().filter(self._user_task_view.c.teleg_id == teleg_id)
+                results = await session.execute(stmt)
             if results is not None:
                 for result in results:
                     lresult.append(result)
         return lresult
 
-    async def get_tasks_of_username(self,username):
-        lresult=list()
-        results=None
+    async def get_tasks_of_username(self, username):
+        lresult = list()
+        results = None
         async with self._async_session() as session:
             async with session.begin():
                 stmt = self._user_task_view.select().filter(self._user_task_view.c.username == username)
@@ -111,7 +111,7 @@ class DbProvider:
                     lresult.append(result)
         return lresult
 
-    async def get_users_of_task_id(self,task_id):
+    async def get_users_of_task_id(self, task_id):
         lresult = list()
         results = None
         async with self._async_session() as session:
@@ -123,7 +123,7 @@ class DbProvider:
                     lresult.append(result)
         return lresult
 
-    async def get_users_of_taskname(self,taskname):
+    async def get_users_of_taskname(self, taskname):
         lresult = list()
         results = None
         async with self._async_session() as session:
@@ -134,4 +134,22 @@ class DbProvider:
                 for result in results:
                     lresult.append(result)
         return lresult
+
+    # inserts list of dicts {"teleg_id":STR,"username":STR,"mail":STR,"role":STR}
+    async def create_users(self, users: list):
+        users_to_append=list()
+        for item in users:
+            role_id = (await self.get_role_detail(name=item["role"]))
+            item["role_id"]=role_id[0][0]
+            users_to_append.append(item)
+        await self._user_wrapper.insert(users=users_to_append)
+
+
+    #inserts list of dicts {"name":STR,"active":0 or 1}
+    #using
+    #roles_to_create_list = list([{"name": "econ_viewer", "active": 1, "operations": "N"},
+    #                             {"name": "gu_consumer", "active": 0, "operations": "N"}])
+    #asyncio.run(dbprovider.create_roles(roles_to_create_list))
+    async def create_roles(self,roles:list):
+        await self._role_wrapper.insert(roles=roles)
 

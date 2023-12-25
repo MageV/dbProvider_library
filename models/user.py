@@ -26,8 +26,8 @@ class User(Base):
         return result
 
     def deserialize(self, serialized: dict):
-        self.id = serialized["id"]
-        self.teleg_id = serialized["name"]
+        #self.id = serialized["id"]
+        self.teleg_id = serialized["teleg_id"]
         self.username=serialized["username"]
         self.mail = serialized["mail"]
         self.role_id = serialized["role_id"]

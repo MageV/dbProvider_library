@@ -49,10 +49,13 @@ class RoleWrapper(AbstractWrapper, ABC):
                     updatable.active = kwargs["active"]
                 await _session.commit()
 
-    async def insert(self, roles):
+    async def insert(self, roles:list):
         async with self.session() as _session:
             async with _session.begin():
-                _session.add_all(roles)
+                for item in roles:
+                    role:Role=Role()
+                    role.deserialize(item)
+                    _session.add(role)
                 await _session.commit()
 
     async def delete(self, row_id):
