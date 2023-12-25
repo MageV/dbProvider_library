@@ -2,7 +2,10 @@ from sqlalchemy import Table
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
 from appconfig.config import Base
-from wrappers.wrappers import UserWrapper, RoleWrapper, AppTaskWrapper, GrantWrapper
+from wrappers.grantwrapper import GrantWrapper
+from wrappers.rolewrapper import RoleWrapper
+from wrappers.taskwrapper import AppTaskWrapper
+from wrappers.userwrapper import UserWrapper
 
 
 class DbProvider:
