@@ -12,6 +12,9 @@ class DbProvider:
     _user_role_view: Table
     _user_task_view: Table
 
+    # initialization class
+    # parameter string  - connection string to DB
+    # example in config.py
     def __init__(self, connstr):
         self._connstr = connstr
         self._async_session = None
@@ -22,10 +25,15 @@ class DbProvider:
         self._engine = create_async_engine(self._connstr, echo=True)
         self._entities = None
 
+    # must execute before using
+    # no parameters
+    # no returns
     async def create_engine(self) -> None:
-        self._async_session = async_sessionmaker(self._engine, expire_on_commit=False)
+        self._async_session = async_sessionmaker(self._engine, autocommit=False, expire_on_commit=False)
         async with self._engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
+            await self._async_session().commit()
+        async with self._engine.begin() as conn:
             self._user_role_view = await conn.run_sync(
                 lambda cnn: Table('user_over_role', Base.metadata, autoload_with=cnn))
             self._user_task_view = await conn.run_sync(
@@ -35,11 +43,18 @@ class DbProvider:
         self._apptask_wrapper: AppTaskWrapper = AppTaskWrapper(self._async_session)
         self._grant_wrapper: GrantWrapper = GrantWrapper(self._async_session)
 
+    # must execute before closing app
+    # no parameters
+    # no returns
     async def destroy_engine(self):
         async with self._async_session() as session:
             await session.close()
+        await self._engine.dispose()
 
     # getters for table "users" wrapped on UsersWrapper & DB Views
+    # return list of cortèges of rows (teleg_id,'username','user_role'
+    # with_role optional default - True
+
     async def get_users(self, with_role=True):
         lresult = list()
         results = None
@@ -56,7 +71,10 @@ class DbProvider:
                     lresult.append(result)
         return lresult
 
-    async def get_users_with_role(self, role: str):
+    # return list of property "teleg_id" for role with name
+    # role must exist in tables roles
+    # otherwise returns []
+    async def get_users_of_role(self, role: str):
         lresult = list()
         results = None
         async with self._async_session() as session:
@@ -68,11 +86,13 @@ class DbProvider:
                 lresult.append(result)
         return lresult
 
+    # return list of cortèges of rows (id,teleg_id,name,mail,role_id) selected by properties
+    # valid properties id,teleg_id,username
+    # property must have chosen only one,e.g id or id_teleg or username
     async def get_user_detail(self, **kwargs):
         return await self._user_wrapper.select(**kwargs)
 
-    # getters for table "roles"
-
+    # return list of cortèges of rows (id,name,operations,active) from roles
     async def get_roles(self):
         return await self._role_wrapper.select()
 
@@ -135,21 +155,44 @@ class DbProvider:
                     lresult.append(result)
         return lresult
 
-    # inserts list of dicts {"teleg_id":STR,"username":STR,"mail":STR,"role":STR}
+    # using
+    # users_to_create_list = list(
+    #    [{"teleg_id": "000015", "username": "Black Queen", "mail": "bq@nonedomain.com", "role": "gu_operator"},
+    #     {"teleg_id": "000010", "username": "White Queen", "mail": "wq@nonedomain.com", "role": "administrator"}])
+    # constraints:
+    # unique for teleg_id+username
+    # roles must exist
     async def create_users(self, users: list):
-        users_to_append=list()
+        users_to_append = list()
         for item in users:
             role_id = (await self.get_role_detail(name=item["role"]))
-            item["role_id"]=role_id[0][0]
+            item["role_id"] = role_id[0][0]
             users_to_append.append(item)
         await self._user_wrapper.insert(users=users_to_append)
 
-
-    #inserts list of dicts {"name":STR,"active":0 or 1}
-    #using
-    #roles_to_create_list = list([{"name": "econ_viewer", "active": 1, "operations": "N"},
+    # using
+    # roles_to_create_list = list([{"name": "econ_viewer", "active": 1, "operations": "N"},
     #                             {"name": "gu_consumer", "active": 0, "operations": "N"}])
-    #asyncio.run(dbprovider.create_roles(roles_to_create_list))
-    async def create_roles(self,roles:list):
+    # await dbprovider.create_roles(roles_to_create_list)
+    # constraints:
+    # unique for name
+    async def create_roles(self, roles: list):
         await self._role_wrapper.insert(roles=roles)
 
+    async def create_tasks(self, tasks: list):
+        await self._apptask_wrapper.insert(apptasks=tasks)
+
+    async def create_grants(self, grants):
+        grants_to_append = list()
+        for item in grants:
+            task_id = (await self.get_task_detail(name=item["task"]))
+            item["task_id"] = task_id[0][0]
+            user_id = -1
+            if item.keys().__contains__("teleg_id"):
+                user_id = (await self.get_user_detail(teleg_id=item["teleg_id"]))
+            elif item.keys().__contains__("username"):
+                user_id = (await self.get_user_detail(username=item["username"]))
+            if user_id != -1 and user_id != []:
+                item["user_id"] = user_id[0][0]
+                grants_to_append.append(item)
+        await self._grant_wrapper.insert(grants_to_append)

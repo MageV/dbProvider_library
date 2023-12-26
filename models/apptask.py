@@ -17,6 +17,6 @@ class AppTask(Base):
         return result
 
     def deserialize(self, serialized: dict):
-        self.id = serialized["id"]
+        #self.id = serialized["id"]
         self.name = serialized["name"]
         self.active = serialized["active"]

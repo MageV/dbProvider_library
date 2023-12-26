@@ -24,6 +24,6 @@ class Grant(Base):
         return result
 
     def deserialize(self, serialized: dict):
-        self.id = serialized["dict"]
+        #self.id = serialized["dict"]
         self.user_id = serialized["user_id"]
         self.task_id = serialized["task_id"]

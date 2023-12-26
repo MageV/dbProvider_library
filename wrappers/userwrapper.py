@@ -11,7 +11,8 @@ class UserWrapper(AbstractWrapper, ABC):
 
     def __init__(self, session: async_sessionmaker[AsyncSession]):
         self.session = session
-
+   # return list of property "teleg_id" for role with name
+    # role must exist in tables roles
     async def select(self, **kwargs):
         results = None
         lresult = list()
@@ -21,15 +22,15 @@ class UserWrapper(AbstractWrapper, ABC):
                     async with _session.begin():
                         stmt = select(User).filter(User.id == (kwargs["id"]))
                         results = await _session.execute(stmt)
-            elif kwargs.keys().__contains__("name"):
+            elif kwargs.keys().__contains__("teleg_id"):
                 async  with self.session() as _session:
                     async  with _session.begin():
-                        stmt = select(User).filter(User.teleg_id == (kwargs["name"]))
+                        stmt = select(User).filter(User.teleg_id == (kwargs["teleg_id"]))
                         results = await _session.execute(stmt)
             elif kwargs.keys().__contains__("username"):
                 async  with self.session() as _session:
                     async  with _session.begin():
-                        stmt = select(User).filter(User.teleg_id == (kwargs["username"]))
+                        stmt = select(User).filter(User.username == (kwargs["username"]))
                         results = await _session.execute(stmt)
         else:
             async with self.session() as _session:
@@ -57,14 +58,14 @@ class UserWrapper(AbstractWrapper, ABC):
                 await _session.commit()
 
     async def insert(self, users: list):
+        def create_writable(item)->User:
+            writable_user=User()
+            writable_user.deserialize(item)
+            return writable_user
         async with self.session() as _session:
             async with _session.begin():
-                for item in users:
-                    writable_user = User()
-                    writable_user.deserialize(item)
-                    writable_user.id = None
-                    _session.add(writable_user)
-                await _session.commit()
+                _session.add_all(map(create_writable,users))
+            await _session.commit()
 
     async def delete(self, row_id):
         async with self.session() as _session:

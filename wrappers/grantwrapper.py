@@ -1,3 +1,4 @@
+import logging
 from abc import ABC
 
 from sqlalchemy import select, delete
@@ -15,7 +16,7 @@ class GrantWrapper(AbstractWrapper, ABC):
     async def select(self, **kwargs):
         results = None
         lresult = list()
-        if kwargs !={}:
+        if kwargs != {}:
             if kwargs.keys().__contains__("id"):
                 async with self.session() as _session:
                     async with _session.begin():
@@ -47,10 +48,21 @@ class GrantWrapper(AbstractWrapper, ABC):
         pass
 
     async def insert(self, grants):
+        def create_writable(item) -> Grant:
+            grant: Grant = Grant()
+            grant.deserialize(item)
+            return grant
+
         async with self.session() as _session:
             async with _session.begin():
-                _session.add_all(grants)
-                await _session.commit()
+                _session.add_all(map(create_writable, grants))
+            await _session.commit()
+#            try:
+#                await _session.commit()
+#            except Exception as ex:
+#                logging.log("Unique constraint error.Rollback")
+#                await _session.rollback()
+
 
     async def delete(self, row_id):
         async with self.session() as _session:

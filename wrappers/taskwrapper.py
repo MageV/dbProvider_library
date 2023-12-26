@@ -48,7 +48,11 @@ class AppTaskWrapper(AbstractWrapper, ABC):
     async def insert(self, apptasks):
         async with self.session() as _session:
             async with _session.begin():
-                _session.add_all(apptasks)
+                for item in apptasks:
+                    writable_task=AppTask()
+                    writable_task.deserialize(item)
+                    #writable_task.id=None
+                    _session.add(writable_task)
                 await _session.commit()
 
     async def delete(self, row_id):
