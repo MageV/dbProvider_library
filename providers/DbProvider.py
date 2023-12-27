@@ -1,7 +1,9 @@
-from sqlalchemy import Table
+from sqlalchemy import Table, text
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
-from appconfig.config import Base
+from appconfig.config import Base, views_sql, indexs_sql
+from models.role import Role
+from models.user import User
 from wrappers.grantwrapper import GrantWrapper
 from wrappers.rolewrapper import RoleWrapper
 from wrappers.taskwrapper import AppTaskWrapper
@@ -33,6 +35,13 @@ class DbProvider:
         async with self._engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
             await self._async_session().commit()
+
+        async  with self._engine.begin() as conn:
+            for row in views_sql:
+                await self._ddl_create_views(row)
+            for row in indexs_sql:
+                await self._ddl_create_indexes(row)
+
         async with self._engine.begin() as conn:
             self._user_role_view = await conn.run_sync(
                 lambda cnn: Table('user_over_role', Base.metadata, autoload_with=cnn))
@@ -50,6 +59,16 @@ class DbProvider:
         async with self._async_session() as session:
             await session.close()
         await self._engine.dispose()
+
+    async def _ddl_create_views(self, ddl_string: str):
+        async with self._async_session() as session:
+            await session.execute(text(ddl_string))
+        await session.commit()
+
+    async def _ddl_create_indexes(self, ddl_string: str):
+        async with self._async_session() as session:
+            await session.execute(text(ddl_string))
+        await session.commit()
 
     # getters for table "users" wrapped on UsersWrapper & DB Views
     # return list of cortèges of rows (teleg_id,'username','user_role'

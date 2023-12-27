@@ -15,16 +15,18 @@ class Base(AsyncAttrs, DeclarativeBase):
     pass
 
 
-drops_sql: list = ["drop view if exists main.user_over_role",
-                   "drop view if exists main.users_over_tasks_view",
-                   "drop view if exists main.sys_userid_tasks_view"]
-views_sql: list = ["CREATE VIEW user_over_role as select users.teleg_id,users.username,roles.name as "
-                   "'rolename' from users"
+indexs_sql: list = ["CREATE UNIQUE INDEX IF NOT EXISTS 'apt_uix' ON apptasks(name)",
+                    "CREATE UNIQUE INDEX IF NOT EXISTS 'grants_uix' on grants(user_id,task_id)",
+                    "CREATE UNIQUE INDEX IF NOT EXISTS 'rls_uix' on roles(name)",
+                    "CREATE UNIQUE INDEX IF NOT EXISTS 'usr_uix' on users(teleg_id,username)"]
+views_sql: list = ["CREATE VIEW IF NOT EXISTS user_over_role as select users.teleg_id,users.username,roles.name as "
+                   "'rolename' from users "
                    "inner join roles on users.role_id=roles.id where roles.active=1",
-                   "CREATE VIEW sys_userid_tasks_view as select grants.user_id,apptasks.name as 'taskname' "
-                   "from apptasks"
+                   "CREATE VIEW IF NOT EXISTS  sys_userid_tasks_view as select grants.user_id,apptasks.name as "
+                   "'taskname' from apptasks "
                    "inner join grants on grants.task_id=apptasks.id where apptasks.active=1",
-                   "create view users_over_tasks_view as select users.teleg_id,sys_userid_tasks_view.taskname from "
+                   "CREATE VIEW IF NOT EXISTS  users_over_tasks_view as select users.teleg_id,"
+                   "sys_userid_tasks_view.taskname from "
                    "users inner join sys_userid_tasks_view on users.id=sys_userid_tasks_view.user_id"]
 
 logging.basicConfig(level=logging.INFO, filename="db_log.log", filemode="w")
