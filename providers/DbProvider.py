@@ -1,6 +1,6 @@
 from sqlalchemy import Table, text
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
-from appconfig.config import Base, views_sql, indexs_sql, sql_debug
+from appconfig.config import Base, views_sql, indexs_sql, sql_debug, SEC_DB_OPERATION
 from providers.security import SecurityProvider
 from wrappers.grantwrapper import GrantWrapper
 from wrappers.rolewrapper import RoleWrapper
@@ -83,18 +83,26 @@ class DbProvider:
         await self._engine.dispose()
 
     # getters for table "users" wrapped on UsersWrapper & DB Views
-    # return list of cortèges of rows (teleg_id,'username','user_role'
-    # optional parameters:
-    # with_role=True o false
-    # optional security parameters
-    #
+
     def get_preloaded(self):
         return self._preloaded
 
     @SecurityProvider.allowed
-    async def get_users(self, **kwargs):
+    async def get_users(self, with_role=True, **kwargs):
+        """
+         Return list of cortèges of rows (teleg_id,'username','user_role')
+
+         Parameters
+                  with_role:bool
+                           True or False
+                  sec_values_list:list
+                           always must be dbprovider.get_preloaded()
+                  sec_user:str
+                           User name
+                  sec_user_ops:
+                           SEC_DB_OPERATION value of sec_db_operation enum"""
+
         lresult = list()
-        with_role = kwargs["with_role"]
         results = None
         async with self._async_session() as session:
             async with session.begin():
@@ -109,10 +117,23 @@ class DbProvider:
                     lresult.append(result)
         return lresult
 
-    # return list of property "teleg_id" for role with name
-    # role must exist in tables roles
-    # otherwise returns []
-    async def get_users_of_role(self, role: str):
+    @SecurityProvider.allowed
+    async def get_users_of_role(self, role: str, **kwargs):
+        """
+        Returns users with <role> privileges. Role must exist in tables roles  otherwise returns []
+
+        Parameters
+            role : str
+                        name of role
+            sec_values_list : list
+                        always must be dbprovider.get_preloaded()
+            sec_user : str
+                        user name
+            sec_user_ops : SEC_DB_OPERATION
+                        value of sec_db_operation
+        :return: list of property "teleg_id" for role with name
+
+        """
         lresult = list()
         results = None
         async with self._async_session() as session:
@@ -131,21 +152,26 @@ class DbProvider:
         return await self._user_wrapper.select(**kwargs)
 
     # return list of cortèges of rows (id,name,operations,active) from roles
+    @SecurityProvider.allowed
     async def get_roles(self):
         return await self._role_wrapper.select()
 
+    @SecurityProvider.allowed
     async def get_role_detail(self, **kwargs):
         return await self._role_wrapper.select(**kwargs)
 
     # roles for table tasks
 
-    async def get_tasks(self):
+    @SecurityProvider.allowed
+    async def get_tasks(self, **kwargs):
         return await self._apptask_wrapper.select()
 
+    @SecurityProvider.allowed
     async def get_task_detail(self, **kwargs):
         return await self._apptask_wrapper.select(**kwargs)
 
-    async def get_tasks_of_user_id(self, teleg_id):
+    @SecurityProvider.allowed
+    async def get_tasks_of_user_id(self, teleg_id: str, **kwargs):
         lresult = list()
         results = None
         async with self._async_session() as session:
@@ -157,7 +183,8 @@ class DbProvider:
                     lresult.append(result)
         return lresult
 
-    async def get_tasks_of_username(self, username):
+    @SecurityProvider.allowed
+    async def get_tasks_of_username(self,username:str, **kwargs):
         lresult = list()
         results = None
         async with self._async_session() as session:
@@ -169,7 +196,8 @@ class DbProvider:
                     lresult.append(result)
         return lresult
 
-    async def get_users_of_task_id(self, task_id):
+    @SecurityProvider.allowed
+    async def get_users_of_task_id(self,task_id, **kwargs):
         lresult = list()
         results = None
         async with self._async_session() as session:
@@ -181,9 +209,11 @@ class DbProvider:
                     lresult.append(result)
         return lresult
 
-    async def get_users_of_taskname(self, taskname):
+    @SecurityProvider.allowed
+    async def get_users_of_taskname(self, **kwargs):
         lresult = list()
         results = None
+        taskname = kwargs["taskname"]
         async with self._async_session() as session:
             async with session.begin():
                 stmt = self._user_task_view.select().filter(self._user_task_view.c.taskname == taskname)
@@ -220,16 +250,28 @@ class DbProvider:
     async def create_tasks(self, tasks: list):
         await self._apptask_wrapper.insert(apptasks=tasks)
 
-    async def create_grants(self, grants):
+    async def create_grants(self, grants, **kwargs):
         grants_to_append = list()
+        sec_user = kwargs.get("sec_user")
         for item in grants:
-            task_id = (await self.get_task_detail(name=item["task"]))
+            task_id = (await self.get_task_detail(name=item["task"],
+                                                  sec_values_list=self.get_preloaded(),
+                                                  sec_user=sec_user,
+                                                  sec_user_ops=SEC_DB_OPERATION.SDO_READ))
             item["task_id"] = task_id[0][0]
             user_id = -1
             if item.keys().__contains__("teleg_id"):
-                user_id = (await self.get_user_detail(teleg_id=item["teleg_id"]))
+                user_id = (await self.get_user_detail(teleg_id=item["teleg_id"],
+                                                      sec_values_list=self.get_preloaded(),
+                                                      sec_user=sec_user,
+                                                      sec_user_ops=SEC_DB_OPERATION.SDO_READ
+                                                      ))
             elif item.keys().__contains__("username"):
-                user_id = (await self.get_user_detail(username=item["username"]))
+                user_id = (await self.get_user_detail(username=item["username"],
+                                                      sec_values_list=self.get_preloaded(),
+                                                      sec_user=sec_user,
+                                                      sec_user_ops=SEC_DB_OPERATION.SDO_READ
+                                                      ))
             if user_id != -1 and user_id != []:
                 item["user_id"] = user_id[0][0]
                 grants_to_append.append(item)

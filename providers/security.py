@@ -49,10 +49,10 @@ class SecurityProvider:
             def wrapper(*args, **kwargs):
                 sec_key = UUID().__str__().encode()
                 users = kwargs["sec_users"]
-                username = kwargs["username"]
+                userid = kwargs["user"]
                 for item in users:
                     sec_item = hmac.digest(sec_key, item, 'sha256')
-                    sec_user_vrf = hmac.digest(sec_key, username, 'sha256')
+                    sec_user_vrf = hmac.digest(sec_key, userid, 'sha256')
                     if hmac.compare_digest(sec_item, sec_user_vrf):
                         return func(*args, **kwargs)
 

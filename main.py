@@ -5,20 +5,19 @@ from sqlalchemy.exc import IntegrityError
 
 from appconfig import config
 from appconfig.config import SEC_DB_OPERATION
-from models.role import Role
 from providers.DbProvider import DbProvider
 
 if __name__ == '__main__':
     dbprovider = DbProvider(connstr=config.sqlite_str)
     asyncio.run(dbprovider.create_engine())
     print("!!!GET_USERS!!!")
-    resultset = asyncio.run(dbprovider.get_users(with_role=True, sec_user='Black Queen',
-                                                 sec_values_list=dbprovider.get_preloaded(),
-                                                 sec_user_ops=SEC_DB_OPERATION.SDO_CREATE))
+    resultset = asyncio.run(dbprovider.get_users(sec_user='Black Queen',
+                                                 sec_user_ops=SEC_DB_OPERATION.SDO_READ,
+                                                 sec_values_list=dbprovider.get_preloaded()))
     print(resultset)
-    #   print("!!!GET_USERS_WITH_ROLE!!!")
-    #   resultset = asyncio.run(dbprovider.get_users_of_role(role='administrator'))
-    #   print(resultset)
+    # # print("!!!GET_USERS_WITH_ROLE!!!")
+    # resultset = asyncio.run(dbprovider.get_users_of_role(role='administrator'))
+    # print(resultset)
     #   print("!!!GET_USERS_DETAIL!!!")
     #   resultset = asyncio.run(dbprovider.get_user_detail(id=1))
     #   print(resultset)
@@ -54,11 +53,11 @@ if __name__ == '__main__':
     #        asyncio.run(dbprovider.create_tasks(task_to_create_list))
     #    except:
     #        print("error")
-    try:
-        grants_to_create_list = list(
-            [{"username": "Swaggle Sword", "task": "stat"}])
-        asyncio.run(dbprovider.create_grants(grants_to_create_list))
-    except IntegrityError as ex:
-        logging.log(msg=f"Insertion row error.Values not unique. {ex.__str__()}",level=logging.ERROR)
+ #   try:
+    #     grants_to_create_list = list(
+    #         [{"username": "Swaggle Sword", "task": "stat"}])
+    #     asyncio.run(dbprovider.create_grants(grants_to_create_list,sec_user="White Queen"))
+    # except IntegrityError as ex:
+    #     logging.log(msg=f"Insertion row error.Values not unique. {ex.__str__()}",level=logging.ERROR)
 
     #asyncio.run(dbprovider.destroy_engine())
