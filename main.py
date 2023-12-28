@@ -12,9 +12,9 @@ if __name__ == '__main__':
     dbprovider = DbProvider(connstr=config.sqlite_str)
     asyncio.run(dbprovider.create_engine())
     print("!!!GET_USERS!!!")
-    resultset = asyncio.run(dbprovider.get_users(with_role=True, user='Black Queen',
-                                                 values_list=dbprovider.get_preloaded(),
-                                                 user_ops=SEC_DB_OPERATION.SDO_CREATE))
+    resultset = asyncio.run(dbprovider.get_users(with_role=True, sec_user='Black Queen',
+                                                 sec_values_list=dbprovider.get_preloaded(),
+                                                 sec_user_ops=SEC_DB_OPERATION.SDO_CREATE))
     print(resultset)
     #   print("!!!GET_USERS_WITH_ROLE!!!")
     #   resultset = asyncio.run(dbprovider.get_users_of_role(role='administrator'))
