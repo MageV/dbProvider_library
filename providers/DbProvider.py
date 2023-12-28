@@ -1,7 +1,7 @@
 from sqlalchemy import Table, text
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
-from appconfig.config import Base, views_sql, indexs_sql
+from appconfig.config import Base, views_sql, indexs_sql, sql_debug
 from models.role import Role
 from models.user import User
 from wrappers.grantwrapper import GrantWrapper
@@ -24,7 +24,7 @@ class DbProvider:
         self._role_wrapper = None
         self._apptask_wrapper = None
         self._grant_wrapper = None
-        self._engine = create_async_engine(self._connstr, echo=True)
+        self._engine = create_async_engine(self._connstr, echo=sql_debug)
         self._entities = None
 
     # must execute before using

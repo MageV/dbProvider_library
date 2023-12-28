@@ -32,8 +32,4 @@ views_sql: list = ["CREATE VIEW IF NOT EXISTS user_over_role as select users.tel
 logging.basicConfig(level=logging.INFO, filename="db_log.log", filemode="w")
 
 
-class DataDictionary(Enum):
-    DD_USER = auto(),
-    DD_ROLE = auto(),
-    DD_GRANT = auto(),
-    DD_APPTSK = auto()
+sql_debug=False
