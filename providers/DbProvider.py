@@ -1,9 +1,7 @@
 from sqlalchemy import Table, text
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
-
 from appconfig.config import Base, views_sql, indexs_sql, sql_debug
-from models.role import Role
-from models.user import User
+from providers.security import SecurityProvider
 from wrappers.grantwrapper import GrantWrapper
 from wrappers.rolewrapper import RoleWrapper
 from wrappers.taskwrapper import AppTaskWrapper
@@ -13,6 +11,7 @@ from wrappers.userwrapper import UserWrapper
 class DbProvider:
     _user_role_view: Table
     _user_task_view: Table
+    _sys_roles_view: Table
 
     # initialization class
     # parameter string  - connection string to DB
@@ -25,7 +24,7 @@ class DbProvider:
         self._apptask_wrapper = None
         self._grant_wrapper = None
         self._engine = create_async_engine(self._connstr, echo=sql_debug)
-        self._entities = None
+        self._preloaded = dict()
 
     # must execute before using
     # no parameters
@@ -47,18 +46,13 @@ class DbProvider:
                 lambda cnn: Table('user_over_role', Base.metadata, autoload_with=cnn))
             self._user_task_view = await conn.run_sync(
                 lambda cnn: Table('users_over_tasks_view', Base.metadata, autoload_with=cnn))
+            self._sys_roles_view = await conn.run_sync(
+                lambda cnn: Table('sys_roles', Base.metadata, autoload_with=cnn))
+            await self._preload_security()
         self._user_wrapper: UserWrapper = UserWrapper(self._async_session)
         self._role_wrapper: RoleWrapper = RoleWrapper(self._async_session)
         self._apptask_wrapper: AppTaskWrapper = AppTaskWrapper(self._async_session)
         self._grant_wrapper: GrantWrapper = GrantWrapper(self._async_session)
-
-    # must execute before closing app
-    # no parameters
-    # no returns
-    async def destroy_engine(self):
-        async with self._async_session() as session:
-            await session.close()
-        await self._engine.dispose()
 
     async def _ddl_create_views(self, ddl_string: str):
         async with self._async_session() as session:
@@ -70,12 +64,37 @@ class DbProvider:
             await session.execute(text(ddl_string))
         await session.commit()
 
+    async def _preload_security(self):
+        lresult = list()
+        async  with self._async_session() as session:
+            stmt = self._sys_roles_view.select()
+            results = await session.execute(stmt)
+            for result in results:
+                lresult.append(result)
+            self._preloaded = list(map(lambda x: {str(x[1]): x[2]}, lresult))
+        return
+
+    # must execute before closing app
+    # no parameters
+    # no returns
+    async def destroy_engine(self):
+        async with self._async_session() as session:
+            await session.close()
+        await self._engine.dispose()
+
     # getters for table "users" wrapped on UsersWrapper & DB Views
     # return list of cortèges of rows (teleg_id,'username','user_role'
-    # with_role optional default - True
+    # optional parameters:
+    # with_role=True o false
+    # optional security parameters
+    #
+    def get_preloaded(self):
+        return self._preloaded
 
-    async def get_users(self, with_role=True):
+    @SecurityProvider.allowed
+    async def get_users(self, **kwargs):
         lresult = list()
+        with_role = kwargs["with_role"]
         results = None
         async with self._async_session() as session:
             async with session.begin():
