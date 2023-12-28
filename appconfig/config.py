@@ -1,3 +1,5 @@
+import asyncio
+import functools
 import logging
 from enum import Enum, auto
 
@@ -15,6 +17,10 @@ class Base(AsyncAttrs, DeclarativeBase):
     pass
 
 
+
+
+
+sql_debug = False
 indexs_sql: list = ["CREATE UNIQUE INDEX IF NOT EXISTS 'apt_uix' ON apptasks(name)",
                     "CREATE UNIQUE INDEX IF NOT EXISTS 'grants_uix' on grants(user_id,task_id)",
                     "CREATE UNIQUE INDEX IF NOT EXISTS 'rls_uix' on roles(name)",
@@ -27,9 +33,15 @@ views_sql: list = ["CREATE VIEW IF NOT EXISTS user_over_role as select users.tel
                    "inner join grants on grants.task_id=apptasks.id where apptasks.active=1",
                    "CREATE VIEW IF NOT EXISTS  users_over_tasks_view as select users.teleg_id,"
                    "sys_userid_tasks_view.taskname from "
-                   "users inner join sys_userid_tasks_view on users.id=sys_userid_tasks_view.user_id"]
+                   "users inner join sys_userid_tasks_view on users.id=sys_userid_tasks_view.user_id",
+                   "CREATE VIEW IF NOT EXISTS sys_roles as select users.teleg_id,users.username,roles.operations from"
+                   " users inner join roles on users.role_id=roles.id"]
 
 logging.basicConfig(level=logging.INFO, filename="db_log.log", filemode="w")
 
 
-sql_debug=False
+class SEC_DB_OPERATION(Enum):
+    SDO_READ = 'R'
+    SDO_UPDATE = 'U'
+    SDO_DELETE = 'D'
+    SDO_CREATE = 'C'

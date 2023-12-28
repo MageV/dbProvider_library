@@ -44,6 +44,7 @@ class AppTaskWrapper(AbstractWrapper, ABC):
                     updatable.name = kwargs["name"]
                 if kwargs.keys().__contains__("active"):
                     updatable.active = kwargs["active"]
+            await _session.commit()
 
     async def insert(self, apptasks):
         async with self.session() as _session:
