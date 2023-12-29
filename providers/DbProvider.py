@@ -224,10 +224,11 @@ class DbProvider:
     # constraints:
     # unique for teleg_id+username
     # roles must exist
-    async def create_users(self, users: list):
+    @SecurityProvider.allowed
+    async def create_users(self, users: list,**kwargs):
         users_to_append = list()
         for item in users:
-            role_id = (await self.get_role_detail(name=item["role"]))
+            role_id = (await self.get_role_detail(name=item["role"], sec_user_ops=SEC_DB_OPERATION.SDO_READ))
             item["role_id"] = role_id[0][0]
             users_to_append.append(item)
         await self._user_wrapper.insert(users=users_to_append)
