@@ -6,6 +6,7 @@ from wrappers.grantwrapper import GrantWrapper
 from wrappers.rolewrapper import RoleWrapper
 from wrappers.taskwrapper import AppTaskWrapper
 from wrappers.userwrapper import UserWrapper
+from appconfig.contexts import *
 
 
 class DbProvider:
@@ -53,6 +54,7 @@ class DbProvider:
         self._role_wrapper: RoleWrapper = RoleWrapper(self._async_session)
         self._apptask_wrapper: AppTaskWrapper = AppTaskWrapper(self._async_session)
         self._grant_wrapper: GrantWrapper = GrantWrapper(self._async_session)
+        sec_preloaded.set(self.get_preloaded())
 
     async def _ddl_create_views(self, ddl_string: str):
         async with self._async_session() as session:

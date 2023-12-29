@@ -9,7 +9,7 @@ if __name__ == '__main__':
     sec_user_ctx.set('000015')
     dbprovider = DbProvider(connstr=config.sqlite_str)
     asyncio.run(dbprovider.create_engine())
-    sec_preloaded.set(dbprovider.get_preloaded())
+
     print("!!!GET_USERS!!!")
     resultset = asyncio.run(dbprovider.get_users(sec_user_ops=SEC_DB_OPERATION.SDO_READ))
     print(resultset)
