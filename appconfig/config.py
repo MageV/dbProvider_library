@@ -7,13 +7,13 @@ from sqlalchemy.orm import DeclarativeBase
 sqlite_str = "sqlite+aiosqlite:///bot.db"
 postgres_str = "postgresql://user:%1@localhost/%2"
 mysql_str = "mysql://user:%1@localhost/%2"
-
+sql_debug = False
 
 class Base(AsyncAttrs, DeclarativeBase):
     pass
 
 
-sql_debug = False
+
 indexs_sql: list = ["CREATE UNIQUE INDEX IF NOT EXISTS 'apt_uix' ON apptasks(name)",
                     "CREATE UNIQUE INDEX IF NOT EXISTS 'grants_uix' on grants(user_id,task_id)",
                     "CREATE UNIQUE INDEX IF NOT EXISTS 'rls_uix' on roles(name)",
