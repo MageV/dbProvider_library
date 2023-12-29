@@ -93,13 +93,8 @@ class DbProvider:
          Return list of cortèges of rows (teleg_id,'username','user_role')
 
          Parameters
-                  with_role:bool
-                           True or False
-                  sec_values_list:list
-                           always must be dbprovider.get_preloaded()
-                  sec_user:str
-                           User teleg_id
-                  sec_user_ops:
+                  kwargs:
+                    sec_user_ops:
                            SEC_DB_OPERATION value of sec_db_operation enum"""
 
         lresult = list()
@@ -125,12 +120,9 @@ class DbProvider:
         Parameters
             role : str
                         name of role
-            sec_values_list : list
-                        always must be dbprovider.get_preloaded()
-            sec_user : str
-                        user name
-            sec_user_ops : SEC_DB_OPERATION
-                        value of sec_db_operation
+                    kwargs:
+                                sec_user_ops : SEC_DB_OPERATION
+                                value of sec_db_operation
         :return: list of property "teleg_id" for role with name
 
         """
