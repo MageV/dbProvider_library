@@ -1,11 +1,7 @@
-import asyncio
-import functools
 import logging
-from enum import Enum, auto
+from enum import Enum
 
-from sqlalchemy import MetaData
 from sqlalchemy.ext.asyncio import AsyncAttrs
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import DeclarativeBase
 
 sqlite_str = "sqlite+aiosqlite:///bot.db"
@@ -15,9 +11,6 @@ mysql_str = "mysql://user:%1@localhost/%2"
 
 class Base(AsyncAttrs, DeclarativeBase):
     pass
-
-
-
 
 
 sql_debug = False
@@ -45,3 +38,5 @@ class SEC_DB_OPERATION(Enum):
     SDO_UPDATE = 'U'
     SDO_DELETE = 'D'
     SDO_CREATE = 'C'
+
+

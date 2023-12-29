@@ -1,19 +1,17 @@
 import asyncio
-import logging
-
-from sqlalchemy.exc import IntegrityError
 
 from appconfig import config
 from appconfig.config import SEC_DB_OPERATION
+from appconfig.contexts import *
 from providers.DbProvider import DbProvider
 
 if __name__ == '__main__':
+    sec_user_ctx.set('000015')
     dbprovider = DbProvider(connstr=config.sqlite_str)
     asyncio.run(dbprovider.create_engine())
+    sec_preloaded.set(dbprovider.get_preloaded())
     print("!!!GET_USERS!!!")
-    resultset = asyncio.run(dbprovider.get_users(sec_user='Black Queen',
-                                                 sec_user_ops=SEC_DB_OPERATION.SDO_READ,
-                                                 sec_values_list=dbprovider.get_preloaded()))
+    resultset = asyncio.run(dbprovider.get_users(sec_user_ops=SEC_DB_OPERATION.SDO_READ))
     print(resultset)
     # # print("!!!GET_USERS_WITH_ROLE!!!")
     # resultset = asyncio.run(dbprovider.get_users_of_role(role='administrator'))
@@ -43,21 +41,21 @@ if __name__ == '__main__':
     #   except:
     #       print('error')
 
-    #users_to_create_list = list(
+    # users_to_create_list = list(
     #      [{"teleg_id": "000235", "username": "Martial Rabbit", "mail": "rabbit@nonedomain.com", "role": "gu_operator"},
     #      {"teleg_id": "000310", "username": "Swaggle Sword", "mail": "sws@nonedomain.com", "role": "administrator"}])
-    #asyncio.run(dbprovider.create_users(users_to_create_list))
+    # asyncio.run(dbprovider.create_users(users_to_create_list))
 
     #    try:
     #        task_to_create_list = list([{"name": "busy", "active": 1}, {"name": "stat", "active": 1}])
     #        asyncio.run(dbprovider.create_tasks(task_to_create_list))
     #    except:
     #        print("error")
- #   try:
-    #     grants_to_create_list = list(
-    #         [{"username": "Swaggle Sword", "task": "stat"}])
-    #     asyncio.run(dbprovider.create_grants(grants_to_create_list,sec_user="White Queen"))
-    # except IntegrityError as ex:
-    #     logging.log(msg=f"Insertion row error.Values not unique. {ex.__str__()}",level=logging.ERROR)
+#   try:
+#     grants_to_create_list = list(
+#         [{"username": "Swaggle Sword", "task": "stat"}])
+#     asyncio.run(dbprovider.create_grants(grants_to_create_list,sec_user="White Queen"))
+# except IntegrityError as ex:
+#     logging.log(msg=f"Insertion row error.Values not unique. {ex.__str__()}",level=logging.ERROR)
 
-    #asyncio.run(dbprovider.destroy_engine())
+# asyncio.run(dbprovider.destroy_engine())

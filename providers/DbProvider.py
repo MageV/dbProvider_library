@@ -71,7 +71,7 @@ class DbProvider:
             results = await session.execute(stmt)
             for result in results:
                 lresult.append(result)
-            self._preloaded = list(map(lambda x: {str(x[1]): x[2]}, lresult))
+            self._preloaded = list(map(lambda x: {str(x[0]): x[2]}, lresult))
         return
 
     # must execute before closing app
@@ -98,7 +98,7 @@ class DbProvider:
                   sec_values_list:list
                            always must be dbprovider.get_preloaded()
                   sec_user:str
-                           User name
+                           User teleg_id
                   sec_user_ops:
                            SEC_DB_OPERATION value of sec_db_operation enum"""
 
@@ -254,24 +254,13 @@ class DbProvider:
         grants_to_append = list()
         sec_user = kwargs.get("sec_user")
         for item in grants:
-            task_id = (await self.get_task_detail(name=item["task"],
-                                                  sec_values_list=self.get_preloaded(),
-                                                  sec_user=sec_user,
-                                                  sec_user_ops=SEC_DB_OPERATION.SDO_READ))
+            task_id = (await self.get_task_detail(sec_user_ops=SEC_DB_OPERATION.SDO_READ))
             item["task_id"] = task_id[0][0]
             user_id = -1
             if item.keys().__contains__("teleg_id"):
-                user_id = (await self.get_user_detail(teleg_id=item["teleg_id"],
-                                                      sec_values_list=self.get_preloaded(),
-                                                      sec_user=sec_user,
-                                                      sec_user_ops=SEC_DB_OPERATION.SDO_READ
-                                                      ))
+                user_id = (await self.get_user_detail(sec_user_ops=SEC_DB_OPERATION.SDO_READ))
             elif item.keys().__contains__("username"):
-                user_id = (await self.get_user_detail(username=item["username"],
-                                                      sec_values_list=self.get_preloaded(),
-                                                      sec_user=sec_user,
-                                                      sec_user_ops=SEC_DB_OPERATION.SDO_READ
-                                                      ))
+                user_id = (await self.get_user_detail(sec_user_ops=SEC_DB_OPERATION.SDO_READ))
             if user_id != -1 and user_id != []:
                 item["user_id"] = user_id[0][0]
                 grants_to_append.append(item)

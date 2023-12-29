@@ -1,18 +1,23 @@
 import asyncio
 import functools
 import hmac
+from contextvars import ContextVar
 from uuid import UUID
 
 from appconfig.config import SEC_DB_OPERATION
+from appconfig.contexts import *
 
 
 class SecurityProvider:
+
     @staticmethod
     def allowed(func):
         if asyncio.iscoroutinefunction(func):
             async def wrapper(*args, **kwargs):
-                values_list = kwargs["sec_values_list"]
-                user = kwargs["sec_user"]
+                user=sec_user_ctx.get()
+                values_list:list=sec_preloaded.get()
+                #values_list = kwargs["sec_values_list"]
+                #user = user_ctx.get()
                 user_ops = kwargs["sec_user_ops"]
                 for item in values_list:
                     if user in item:
