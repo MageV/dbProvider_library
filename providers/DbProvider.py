@@ -1,6 +1,6 @@
 from sqlalchemy import Table, text
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
-from appconfig.config import Base, views_sql, indexs_sql, sql_debug, SEC_DB_OPERATION
+from appconfig.config import Base, views_sql, indexs_sql,  SEC_DB_OPERATION
 from providers.security import SecurityProvider
 from wrappers.grantwrapper import GrantWrapper
 from wrappers.rolewrapper import RoleWrapper
@@ -24,8 +24,8 @@ class DbProvider:
         self._role_wrapper = None
         self._apptask_wrapper = None
         self._grant_wrapper = None
-        self._engine = create_async_engine(self._connstr, echo=sql_debug)
-        self._preloaded = dict()
+        self._engine = create_async_engine(self._connstr, echo=db_sql_debug.get())
+        self._preloaded = list()
 
     # must execute before using
     # no parameters
@@ -54,7 +54,7 @@ class DbProvider:
         self._role_wrapper: RoleWrapper = RoleWrapper(self._async_session)
         self._apptask_wrapper: AppTaskWrapper = AppTaskWrapper(self._async_session)
         self._grant_wrapper: GrantWrapper = GrantWrapper(self._async_session)
-        sec_preloaded.set(self.get_preloaded())
+        #sec_preloaded.set(self._preloaded.copy())
 
     async def _ddl_create_views(self, ddl_string: str):
         async with self._async_session() as session:

@@ -4,10 +4,6 @@ from enum import Enum
 from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import DeclarativeBase
 
-sqlite_str = "sqlite+aiosqlite:///bot.db"
-postgres_str = "postgresql://user:%1@localhost/%2"
-mysql_str = "mysql://user:%1@localhost/%2"
-sql_debug = False
 
 class Base(AsyncAttrs, DeclarativeBase):
     pass
