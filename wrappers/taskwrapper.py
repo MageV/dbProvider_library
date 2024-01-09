@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 
 from models.apptask import AppTask
-from wrappers.abstract_wrapper import AbstractWrapper
+from abstract.wrapper import AbstractWrapper
 
 
 class AppTaskWrapper(AbstractWrapper, ABC):

@@ -1,12 +1,10 @@
-import logging
 from abc import ABC
 
 from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 
 from models.grant import Grant
-from models.role import Role
-from wrappers.abstract_wrapper import AbstractWrapper
+from abstract.wrapper import AbstractWrapper
 
 
 class GrantWrapper(AbstractWrapper, ABC):

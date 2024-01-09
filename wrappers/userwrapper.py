@@ -4,7 +4,7 @@ from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
 
 from models.user import User
-from wrappers.abstract_wrapper import AbstractWrapper
+from abstract.wrapper import AbstractWrapper
 
 
 class UserWrapper(AbstractWrapper, ABC):
