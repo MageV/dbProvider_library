@@ -9,7 +9,7 @@ For using package:
 1. set context user - telegram user id
 2. create dbprovider as described below
 3. set context to preloaded grants
-4. Use commands as decribed below in remarks
+4. Use commands as described below in remarks
 """
 
 
