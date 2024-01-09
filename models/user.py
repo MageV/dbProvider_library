@@ -11,8 +11,8 @@ class User(Base):
     __tablename__ = "users"
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     teleg_id: Mapped[str]=mapped_column(default="",unique=True,nullable=False)
-    username:Mapped[str]=mapped_column(default="",unique=True,nullable=False)
-    mail: Mapped[str]=mapped_column(default="",unique=True,nullable=False)
+    username:Mapped[str]=mapped_column(default="",unique=True,nullable=True)
+    mail: Mapped[str]=mapped_column(default="",unique=True,nullable=True)
     role_id: Mapped[int] = mapped_column(ForeignKey("roles.id"),default=None)
     role: Mapped[List[Role]] = relationship()
 
