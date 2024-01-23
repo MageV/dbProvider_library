@@ -12,15 +12,14 @@ For using package:
 4. Use commands as described below in remarks
 """
 
-
 if __name__ == '__main__':
     sec_user_ctx.set('000015')
     dbprovider = DbProvider(connstr=db_sql_connection.get())
-    asyncio.run(dbprovider.create_engine())
+    asyncio.run(dbprovider(func_name='create_engine'))
     sec_preloaded.set(dbprovider.get_preloaded())
 
     print("!!!GET_USERS!!!")
-    resultset = asyncio.run(dbprovider.get_users(sec_user_ops=SEC_DB_OPERATION.SDO_READ))
+    resultset = asyncio.run(dbprovider(func_name='get_users', sec_user_ops=SEC_DB_OPERATION.SDO_READ))
     print(resultset)
     # # print("!!!GET_USERS_WITH_ROLE!!!")
     # resultset = asyncio.run(dbprovider.get_users_of_role(role='administrator'))

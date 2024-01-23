@@ -1,5 +1,5 @@
 import logging
-from enum import Enum
+from enum import Enum, auto
 
 from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import DeclarativeBase
@@ -34,5 +34,4 @@ class SEC_DB_OPERATION(Enum):
     SDO_UPDATE = 'U'
     SDO_DELETE = 'D'
     SDO_CREATE = 'C'
-
 

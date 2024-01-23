@@ -27,10 +27,14 @@ class DbProvider:
         self._engine = create_async_engine(self._connstr, echo=db_sql_debug.get())
         self._preloaded = list()
 
+    async def __call__(self, *args, **kwargs):
+        func=getattr(self,kwargs["func_name"])
+        return await func(*args,**kwargs)
+
     # must execute before using
     # no parameters
     # no returns
-    async def create_engine(self) -> None:
+    async def create_engine(self,*args,**kwargs) -> None:
         self._async_session = async_sessionmaker(self._engine, autocommit=False, expire_on_commit=False)
         async with self._engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
@@ -54,7 +58,7 @@ class DbProvider:
         self._role_wrapper: RoleWrapper = RoleWrapper(self._async_session)
         self._apptask_wrapper: AppTaskWrapper = AppTaskWrapper(self._async_session)
         self._grant_wrapper: GrantWrapper = GrantWrapper(self._async_session)
-        #sec_preloaded.set(self._preloaded.copy())
+   #     sec_preloaded.set(self._preloaded.copy())
 
     async def _ddl_create_views(self, ddl_string: str):
         async with self._async_session() as session:
@@ -86,7 +90,7 @@ class DbProvider:
 
     # getters for table "users" wrapped on UsersWrapper & DB Views
 
-    def get_preloaded(self):
+    def get_preloaded(self,*args,**kwargs):
         return self._preloaded
 
     @SecurityProvider.allowed

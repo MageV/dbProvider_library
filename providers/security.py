@@ -11,10 +11,10 @@ class SecurityProvider:
     def allowed(func):
         if asyncio.iscoroutinefunction(func):
             async def wrapper(*args, **kwargs):
-                user=sec_user_ctx.get()
-                values_list:list=sec_preloaded.get()
-                #values_list = kwargs["sec_values_list"]
-                #user = user_ctx.get()
+                user = sec_user_ctx.get()
+                values_list: list = sec_preloaded.get()
+                # values_list = kwargs["sec_values_list"]
+                # user = user_ctx.get()
                 user_ops = kwargs["sec_user_ops"]
                 for item in values_list:
                     if user in item:
