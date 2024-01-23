@@ -1,6 +1,6 @@
 from sqlalchemy import Table, text
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
-from appconfig.config import Base, views_sql, indexs_sql,  SEC_DB_OPERATION
+from appconfig.config import Base, views_sql, indexs_sql, SEC_DB_OPERATION
 from providers.security import SecurityProvider
 from wrappers.grantwrapper import GrantWrapper
 from wrappers.rolewrapper import RoleWrapper
@@ -28,13 +28,13 @@ class DbProvider:
         self._preloaded = list()
 
     async def __call__(self, *args, **kwargs):
-        func=getattr(self,kwargs["func_name"])
-        return await func(*args,**kwargs)
+        func = getattr(self, kwargs["func_name"])
+        return await func(*args, **kwargs)
 
     # must execute before using
     # no parameters
     # no returns
-    async def create_engine(self,*args,**kwargs) -> None:
+    async def create_engine(self, *args, **kwargs) -> None:
         self._async_session = async_sessionmaker(self._engine, autocommit=False, expire_on_commit=False)
         async with self._engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
@@ -58,7 +58,8 @@ class DbProvider:
         self._role_wrapper: RoleWrapper = RoleWrapper(self._async_session)
         self._apptask_wrapper: AppTaskWrapper = AppTaskWrapper(self._async_session)
         self._grant_wrapper: GrantWrapper = GrantWrapper(self._async_session)
-   #     sec_preloaded.set(self._preloaded.copy())
+
+    #     sec_preloaded.set(self._preloaded.copy())
 
     async def _ddl_create_views(self, ddl_string: str):
         async with self._async_session() as session:
@@ -90,7 +91,7 @@ class DbProvider:
 
     # getters for table "users" wrapped on UsersWrapper & DB Views
 
-    def get_preloaded(self,*args,**kwargs):
+    def get_preloaded(self, *args, **kwargs):
         return self._preloaded
 
     @SecurityProvider.allowed
@@ -182,7 +183,7 @@ class DbProvider:
         return lresult
 
     @SecurityProvider.allowed
-    async def get_tasks_of_username(self,username:str, **kwargs):
+    async def get_tasks_of_username(self, username: str, **kwargs):
         lresult = list()
         results = None
         async with self._async_session() as session:
@@ -195,7 +196,7 @@ class DbProvider:
         return lresult
 
     @SecurityProvider.allowed
-    async def get_users_of_task_id(self,task_id, **kwargs):
+    async def get_users_of_task_id(self, task_id, **kwargs):
         lresult = list()
         results = None
         async with self._async_session() as session:
@@ -229,7 +230,7 @@ class DbProvider:
     # unique for teleg_id+username
     # roles must exist
     @SecurityProvider.allowed
-    async def create_users(self, users: list,**kwargs):
+    async def create_users(self, users: list, **kwargs):
         users_to_append = list()
         for item in users:
             role_id = (await self.get_role_detail(name=item["role"], sec_user_ops=SEC_DB_OPERATION.SDO_READ))

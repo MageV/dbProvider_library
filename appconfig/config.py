@@ -1,5 +1,4 @@
-import logging
-from enum import Enum, auto
+from enum import Enum
 
 from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import DeclarativeBase
@@ -7,7 +6,6 @@ from sqlalchemy.orm import DeclarativeBase
 
 class Base(AsyncAttrs, DeclarativeBase):
     pass
-
 
 
 indexs_sql: list = ["CREATE UNIQUE INDEX IF NOT EXISTS 'apt_uix' ON apptasks(name)",
@@ -26,7 +24,8 @@ views_sql: list = ["CREATE VIEW IF NOT EXISTS user_over_role as select users.tel
                    "CREATE VIEW IF NOT EXISTS sys_roles as select users.teleg_id,users.username,roles.operations from"
                    " users inner join roles on users.role_id=roles.id"]
 
-#logging.basicConfig(level=logging.INFO, filename="db_log.log", filemode="w")
+
+# logging.basicConfig(level=logging.INFO, filename="db_log.log", filemode="w")
 
 
 class SEC_DB_OPERATION(Enum):
@@ -34,4 +33,3 @@ class SEC_DB_OPERATION(Enum):
     SDO_UPDATE = 'U'
     SDO_DELETE = 'D'
     SDO_CREATE = 'C'
-
