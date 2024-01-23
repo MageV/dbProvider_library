@@ -2,7 +2,7 @@ import asyncio
 
 from appconfig.config import SEC_DB_OPERATION
 from appconfig.contexts import *
-from providers.DbProvider import DbProvider
+from providers.database import DbProvider
 
 """
 For using package:
